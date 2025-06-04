@@ -33,6 +33,10 @@ pipeline {
                     docker.image('bitnami/kubectl:latest').inside('--entrypoint ""') {
                         withKubeConfig([credentialsId: 'kubeconfig']) {
                             sh 'echo "Rodando deploy dentro de um contêiner Docker (bitnami/kubectl)..."'
+                            sh 'echo "--- Conteúdo de /etc/resolv.conf dentro do contêiner kubectl ---"'
+                            sh 'cat /etc/resolv.conf'
+                            sh 'echo "--- Tentando nslookup kubernetes.docker.internal ---"'
+                            sh 'nslookup kubernetes.docker.internal || echo "nslookup falhou"'
                             sh 'kubectl version --client'
 
                             sh 'echo "Atualizando deployment.yaml com a tag: ${TAG_VERSION}"'
