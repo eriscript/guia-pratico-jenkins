@@ -33,7 +33,7 @@ pipeline {
                     docker.image('bitnami/kubectl:latest').inside('--entrypoint ""') {
                         withKubeConfig([credentialsId: 'kubeconfig']) {
                             sh 'echo "Rodando deploy dentro de um contêiner Docker (bitnami/kubectl)..."'
-                            sh 'kubectl version --client --short'
+                            sh 'kubectl version --client'
 
                             sh 'echo "Atualizando deployment.yaml com a tag: ${TAG_VERSION}"'
                             sh 'sed -i "s/{{tag}}/${TAG_VERSION}/g" ./k8s/deployment.yaml'
