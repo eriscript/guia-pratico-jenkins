@@ -22,6 +22,12 @@ pipeline {
         }
 
         stage('Deploy no Kubernetes') {
+            agent {
+                docker {
+                    image 'bitnami/kubectl:latest'
+                }
+            }
+            
             environment {
                 tag_version = "${env.BUILD_ID}"
             }
