@@ -21,21 +21,27 @@ pipeline {
             }
         }
 
+        
         stage('Deploy no Kubernetes') {
-            agent {
-                docker {
-                    image 'bitnami/kubectl:latest'
-                }
-            }
-            
+            agent none
             environment {
-                tag_version = "${env.BUILD_ID}"
+                TAG_VERSION = "${env.BUILD_ID}"
+                K8S_NAMESPACE = 'default'
             }
-
             steps {
-                withKubeConfig([credentialsId: 'kubeconfig']) {
-                    sh 'sed -i "s/{{tag}}/$tag_version/g" ./k8s/deployment.yaml'
-                    sh 'kubectl apply -f k8s/deployment.yaml'
+                script {
+                    docker.image('bitnami/kubectl:latest').inside('--entrypoint ""') {
+                        withKubeConfig([credentialsId: 'kubeconfig']) {
+                            sh 'echo "Rodando deploy dentro de um contêiner Docker (bitnami/kubectl)..."'
+                            sh 'kubectl version --client --short'
+
+                            sh 'echo "Atualizando deployment.yaml com a tag: ${TAG_VERSION}"'
+                            sh 'sed -i "s/{{tag}}/${TAG_VERSION}/g" ./k8s/deployment.yaml'
+
+                            sh 'echo "Aplicando manifestos Kubernetes..."'
+                            sh 'kubectl apply -f ./k8s/deployment.yaml --namespace ${K8S_NAMESPACE}'
+                        }
+                    }
                 }
             }
         }
